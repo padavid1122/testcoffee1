@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://maxcdn.bootstrapcdn.com https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' https://maxcdn.bootstrapcdn.com 'unsafe-inline'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; img-src 'self' https://placehold.co;">
+    <title>Coffee Shop - Menu</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@7.12.15/dist/sweetalert2.all.min.js"></script>
+    <style>
+        .coffee-card {
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+        .coffee-card:hover {
+            transform: scale(1.05);
+        }
+        .cart-item {
+            border-bottom: 1px solid #dee2e6;
+            padding: 10px 0;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Coffee Shop</a>
+            <div>
+                <span class="text-white mr-3" id="welcome-text"></span>
+                <a href="coffee_shop_auth.html" class="text-white">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Our Coffee Menu</h2>
+        <div class="row">
+            <!-- Coffee Products -->
+            <div class="col-md-4 coffee-card">
+                <div class="card">
+                    <img src="images/espresso.jpg" class="card-img-top" alt="Espresso">
+                    <div class="card-body">
+                        <h5 class="card-title">Espresso</h5>
+                        <p class="card-text">Rich and bold single shot of coffee.</p>
+                        <p class="card-text font-weight-bold">$3.00</p>
+                        <button class="btn btn-primary btn-block" onclick="addToCart('Espresso', 3.00)">Add to Cart</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 coffee-card">
+                <div class="card">
+                    <img src="images/latte.jpg" class="card-img-top" alt="Latte">
+                    <div class="card-body">
+                        <h5 class="card-title">Latte</h5>
+                        <p class="card-text">Smooth espresso with steamed milk.</p>
+                        <p class="card-text font-weight-bold">$4.50</p>
+                        <button class="btn btn-primary btn-block" onclick="addToCart('Latte', 4.50)">Add to Cart</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 coffee-card">
+                <div class="card">
+                    <img src="images/cappuccino.jpg" class="card-img-top" alt="Cappuccino">
+                    <div class="card-body">
+                        <h5 class="card-title">Cappuccino</h5>
+                        <p class="card-text">Espresso with frothy milk and foam.</p>
+                        <p class="card-text font-weight-bold">$4.00</p>
+                        <button class="btn btn-primary btn-block" onclick="addToCart('Cappuccino', 4.00)">Add to Cart</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 coffee-card">
+                <div class="card">
+                    <img src="images/americano.jpg" class="card-img-top" alt="Americano">
+                    <div class="card-body">
+                        <h5 class="card-title">Americano</h5>
+                        <p class="card-text">Espresso diluted with hot water.</p>
+                        <p class="card-text font-weight-bold">$3.50</p>
+                        <button class="btn btn-primary btn-block" onclick="addToCart('Americano', 3.50)">Add to Cart</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 coffee-card">
+                <div class="card">
+                    <img src="images/mocha.jpg" class="card-img-top" alt="Mocha">
+                    <div class="card-body">
+                        <h5 class="card-title">Mocha</h5>
+                        <p class="card-text">Espresso with chocolate .</p>
+                        <p class="card-text font-weight-bold">$5.00</p>
+                        <button class="btn btn-primary btn-block" onclick="addToCart('Mocha', 5.00)">Add to Cart</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 coffee-card">
+                <div class="card">
+                    <img src="images/cold_brew.jpg" class="card-img-top" alt="Cold Brew">
+                    <div class="card-body">
+                        <h5 class="card-title">Cold Brew</h5>
+                        <p class="card-text">Smooth, strong coffee brewed cold.</p>
+                        <p class="card-text font-weight-bold">$4.75</p>
+                        <button class="btn btn-primary btn-block" onclick="addToCart('Cold Brew', 4.75)">Add to Cart</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Section -->
+        <div class="card mt-5">
+            <div class="card-body">
+                <h3 class="card-title">Your Cart</h3>
+                <div id="cart-items" class="mb-3"></div>
+                <p id="cart-total" class="font-weight-bold">Total: $0.00</p>
+                <button id="checkout-btn" class="btn btn-success btn-block" onclick="checkout()" disabled>Checkout</button>
+            </div>
+        </div>
+
+        <!-- Order History Section -->
+        <div class="card mt-5">
+            <div class="card-body">
+                <h3 class="card-title">Order History</h3>
+                <button class="btn btn-info btn-block mb-3" onclick="fetchOrderHistory()">View Order History</button>
+                <div id="order-history" class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="order-history-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const scriptURL = "https://script.google.com/macros/s/AKfycbytUFnVr_6QQBQIjoLV2I0DRyYAjjDx5giuLMrKxr0wE4yP6TlCZxMIJys0HmUUbGHm/exec";
+
+        // Define global username
+        let username = 'Guest';
+        try {
+            console.log('Initializing coffee shop page');
+            const urlParams = new URLSearchParams(window.location.search);
+            username = urlParams.get('username') || 'Guest';
+            document.getElementById('welcome-text').textContent = `Welcome, ${username}!`;
+            console.log('Username set:', username);
+        } catch (error) {
+            console.error('Initialization error:', error.message);
+            swal('Error', 'Failed to load page: ' + error.message, 'error');
+        }
+
+        // Cart functionality
+        let cart = [];
+
+        function addToCart(itemName, price) {
+            try {
+                cart.push({ name: itemName, price: price });
+                updateCart();
+                swal('Added!', `${itemName} added to cart.`, 'success');
+            } catch (error) {
+                console.error('Add to cart error:', error.message);
+                swal('Error', 'Failed to add item to cart: ' + error.message, 'error');
+            }
+        }
+
+        function updateCart() {
+            try {
+                const cartItems = document.getElementById('cart-items');
+                const checkoutBtn = document.getElementById('checkout-btn');
+                cartItems.innerHTML = '';
+                let total = 0;
+
+                cart.forEach((item, index) => {
+                    total += item.price;
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'cart-item d-flex justify-content-between align-items-center';
+                    itemDiv.innerHTML = `
+                        <span>${item.name} - $${item.price.toFixed(2)}</span>
+                        <button class="btn btn-link text-danger" onclick="removeFromCart(${index})">Remove</button>
+                    `;
+                    cartItems.appendChild(itemDiv);
+                });
+
+                document.getElementById('cart-total').textContent = `Total: $${total.toFixed(2)}`;
+                checkoutBtn.disabled = cart.length === 0;
+                console.log('Cart updated, total:', total);
+            } catch (error) {
+                console.error('Update cart error:', error.message);
+                swal('Error', 'Failed to update cart: ' + error.message, 'error');
+            }
+        }
+
+        function removeFromCart(index) {
+            try {
+                cart.splice(index, 1);
+                updateCart();
+            } catch (error) {
+                console.error('Remove from cart error:', error.message);
+                swal('Error', 'Failed to remove item from cart: ' + error.message, 'error');
+            }
+        }
+
+        function checkout() {
+            try {
+                if (cart.length === 0) {
+                    swal('Empty Cart', 'Please add items to your cart.', 'warning');
+                    return;
+                }
+
+                if (!username || username === 'Guest') {
+                    throw new Error('User not logged in');
+                }
+
+                const items = cart.map(item => item.name).join(', ');
+                const total = cart.reduce((sum, item) => sum + item.price, 0);
+
+                const formData = new FormData();
+                formData.append('action', 'saveOrder');
+                formData.append('username', username);
+                formData.append('items', items);
+                formData.append('total', total);
+
+                console.log('Submitting checkout:', { username, items, total });
+
+                fetch(scriptURL, { method: 'POST', body: formData })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network error: ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Checkout response:', data);
+                        if (data.result === 'success') {
+                            swal('Order Placed!', 'Your order has been saved.', 'success')
+                                .then(() => {
+                                    cart = [];
+                                    updateCart();
+                                });
+                        } else {
+                            console.error('Checkout error:', data.error);
+                            swal('Error', data.error, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Checkout failed:', error.message);
+                        swal('Error', 'Checkout failed: ' + error.message, 'error');
+                    });
+            } catch (error) {
+                console.error('Checkout error:', error.message);
+                swal('Error', 'Checkout failed: ' + error.message, 'error');
+            }
+        }
+
+        function fetchOrderHistory() {
+            try {
+                const formData = new FormData();
+                formData.append('action', 'getOrders');
+                formData.append('username', username);
+
+                console.log('Fetching order history for:', username);
+
+                fetch(scriptURL, { method: 'POST', body: formData })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network error: ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Order history response:', data);
+                        if (data.result === 'success') {
+                            displayOrderHistory(data.orders);
+                        } else {
+                            console.error('Fetch orders error:', data.error);
+                            swal('Error', data.error, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Fetch orders failed:', error.message);
+                        swal('Error', 'Failed to fetch order history: ' + error.message, 'error');
+                    });
+            } catch (error) {
+                console.error('Fetch order history error:', error.message);
+                swal('Error', 'Failed to fetch order history: ' + error.message, 'error');
+            }
+        }
+
+        function displayOrderHistory(orders) {
+            try {
+                const orderHistoryBody = document.getElementById('order-history-body');
+                orderHistoryBody.innerHTML = '';
+
+                if (orders.length === 0) {
+                    orderHistoryBody.innerHTML = '<tr><td colspan="3" class="text-center">No orders found.</td></tr>';
+                    return;
+                }
+
+                orders.forEach(order => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${order.items}</td>
+                        <td>$${parseFloat(order.total).toFixed(2)}</td>
+                        <td>${new Date(order.timestamp).toLocaleString()}</td>
+                    `;
+                    orderHistoryBody.appendChild(row);
+                });
+                console.log('Order history displayed:', orders.length, 'orders');
+            } catch (error) {
+                console.error('Display order history error:', error.message);
+                swal('Error', 'Failed to display order history: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

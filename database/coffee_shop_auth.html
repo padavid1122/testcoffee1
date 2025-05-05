@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee Shop - Register & Login</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@7.12.15/dist/sweetalert2.all.min.js"></script>
+    <style>
+        .auth-container {
+            max-width: 400px;
+            margin: auto;
+            margin-top: 50px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+        .coffee-header {
+            text-align: center;
+            color: #4b2e2e;
+            margin-bottom: 20px;
+        }
+        .toggle-link {
+            color: #007bff;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container">
+        <div class="auth-container">
+            <h3 class="coffee-header">Coffee Shop</h3>
+            
+            <!-- Register Form -->
+            <div id="register-form">
+                <h4 class="text-center mb-4">Register</h4>
+                <form id="register-to-google-sheet">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input class="form-control" type="text" name="username" id="username" placeholder="Username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input class="form-control" type="email" name="email" id="email" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input class="form-control" type="password" name="password" id="password" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Register</button>
+                </form>
+                <p class="text-center mt-3">Already registered? <span class="toggle-link" onclick="showLogin()">Login here</span></p>
+            </div>
+            
+            <!-- Login Form -->
+            <div id="login-form" style="display: none;">
+                <h4 class="text-center mb-4">Login</h4>
+                <form id="login-to-google-sheet">
+                    <div class="form-group">
+                        <label for="login-email">Email:</label>
+                        <input class="form-control" type="email" name="email" id="login-email" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password:</label>
+                        <input class="form-control" type="password" name="password" id="login-password" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
+                </form>
+                <p class="text-center mt-3">Need an account? <span class="toggle-link" onclick="showRegister()">Register here</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const scriptURL = "https://script.google.com/macros/s/AKfycbytUFnVr_6QQBQIjoLV2I0DRyYAjjDx5giuLMrKxr0wE4yP6TlCZxMIJys0HmUUbGHm/exec";
+        
+        function showRegister() {
+            document.getElementById('register-form').style.display = 'block';
+            document.getElementById('login-form').style.display = 'none';
+        }
+        
+        function showLogin() {
+            document.getElementById('register-form').style.display = 'none';
+            document.getElementById('login-form').style.display = 'block';
+        }
+        
+        // Register Form Submission
+        const registerForm = document.forms['register-to-google-sheet'];
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(registerForm);
+            formData.append('action', 'register');
+            fetch(scriptURL, { method: 'POST', body: formData })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network error: ' + response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.result === 'success') {
+                        swal('Success!', 'Registration saved! Please login.', 'success')
+                            .then(() => {
+                                showLogin();
+                                registerForm.reset();
+                            });
+                    } else {
+                        console.error('Registration error:', data.error);
+                        swal('Error', data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Registration failed:', error.message);
+                    swal('Error', 'Registration failed: ' + error.message, 'error');
+                });
+        });
+        
+        // Login Form Submission
+        const loginForm = document.forms['login-to-google-sheet'];
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(loginForm);
+            formData.append('action', 'login');
+            console.log('Submitting login with email:', formData.get('email'));
+            fetch(scriptURL, { method: 'POST', body: formData })
+                .then(response => {
+                    if (!response.ok) {
+                        console.error('Network error:', response.status, response.statusText);
+                        throw new Error('Network error: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Login response:', data);
+                    if (data.result === 'success') {
+                        console.log('Login successful, redirecting for:', data.username, 'isAdmin:', data.isAdmin);
+                        swal('Welcome!', 'Login successful, ' + data.username + '!', 'success')
+                            .then(() => {
+                                try {
+                                    const redirectUrl = data.isAdmin ? 'admin.html' : 'coffee_shop.html';
+                                    window.location.href = redirectUrl + '?username=' + encodeURIComponent(data.username);
+                                } catch (err) {
+                                    console.error('Redirect failed:', err.message);
+                                    swal('Error', 'Failed to redirect to ' + (data.isAdmin ? 'admin' : 'coffee shop') + ' page.', 'error');
+                                }
+                            });
+                    } else {
+                        console.error('Login error:', data.error);
+                        swal('Error', data.error, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Login failed:', error.message);
+                    swal('Error', 'Login failed: ' + error.message, 'error');
+                });
+        });
+    </script>
+</body>
+</html>
